@@ -68,26 +68,32 @@ A full-stack web application designed to help users manage their personal financ
 ## Project Structure
 
 This project follows a monorepo structure containing both the backend and frontend codebases:
+## Project Structure
+
+This project follows a monorepo structure containing both the backend and frontend codebases:
+
+```text
 EmptyBudget/
-├── .git/ # Git repository data
-├── backend/ # Django project root
-│ ├── EmptyBudget/ # Django project settings/core files
-│ ├── api/ # Django app for API logic (models, views, serializers)
-│ ├── manage.py # Django management script
-│ ├── requirements.txt # Backend Python dependencies (Optional, can generate from pip freeze)
-│ └── venv/ # Python virtual environment (ignored by Git)
+├── .git/             # Git repository data
+├── backend/          # Django project root
+│   ├── EmptyBudget/  # Django project settings/core files
+│   ├── api/          # Django app for API logic (models, views, serializers)
+│   ├── manage.py     # Django management script
+│   ├── requirements.txt # Backend Python dependencies (Optional)
+│   └── venv/         # Python virtual environment (ignored by Git)
 │
-├── frontend/ # React project root
-│ ├── public/ # Static assets and index.html
-│ ├── src/ # React source code (components, hooks, etc.)
-│ ├── cypress/ # Cypress E2E test files
-│ ├── node_modules/ # Frontend dependencies (ignored by Git)
-│ ├── package.json # Frontend dependencies and scripts
-│ ├── craco.config.js # CRACO configuration (if used)
-│ └── cypress.config.js # Cypress configuration
+├── frontend/         # React project root
+│   ├── public/       # Static assets and index.html
+│   ├── src/          # React source code (components, hooks, etc.)
+│   ├── cypress/      # Cypress E2E test files
+│   ├── node_modules/ # Frontend dependencies (ignored by Git)
+│   ├── package.json  # Frontend dependencies and scripts
+│   ├── craco.config.js # CRACO configuration (if used)
+│   └── cypress.config.js # Cypress configuration
 │
-├── .gitignore # Specifies intentionally untracked files for Git
-└── README.md # This file
+├── .gitignore        # Specifies intentionally untracked files for Git
+└── README.md         # This file
+```
 
 ## Getting Started
 
