@@ -9,20 +9,29 @@ function BankAccountInstanceManager() {
     const [showModal, setShowModal] = useState(false);
     const [currentInstance, setCurrentInstance] = useState(null);
     const [formData, setFormData] = useState({
-        bank_account: '', priority: 0, due_date: '', pay_date: null, name: '',
-        status: '', archived: false, current_balance: null, recurrence: null
+        bank_account: '', // FK ID
+        priority: 0,
+        due_date: '',
+        pay_date: null, // Optional date
+        name: '',
+        status: '', // FK ID
+        archived: false,
+        current_balance: null, // Optional decimal (Amount/Balance Snapshot)
+        recurrence: null // Optional FK ID
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [modalError, setModalError] = useState(null); // Specific error state for the modal
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // const [bankAccounts, setBankAccounts] = useState([]); // State for dropdowns
-    // const [billStatuses, setBillStatuses] = useState([]); // State for dropdowns
-    // const [recurrences, setRecurrences] = useState([]); // State for dropdowns
+    // Add state for related data dropdowns - REQUIRED FOR REAL APP
+    const [bankAccounts, setBankAccounts] = useState([]); // State for dropdowns
+    const [billStatuses, setBillStatuses] = useState([]); // State for dropdowns
+    const [recurrences, setRecurrences] = useState([]); // State for dropdowns
 
     const apiEndpoint = `${API_BASE_URL}/api/bank-account-instances/`;
 
+    // Fetch Instance Data
     const fetchInstances = useCallback(async () => {
         setIsLoading(true);
         setError(null); // Clear main error on fetch start
@@ -37,26 +46,54 @@ function BankAccountInstanceManager() {
         }
     }, [apiEndpoint]);
 
-    // Add fetchRelatedData here for dropdowns in a real app
+    // Fetch Related Data (for dropdowns) - REQUIRED FOR REAL APP
+    const fetchRelatedData = useCallback(async () => {
+        try {
+            const [accRes, statusRes, recRes] = await Promise.all([
+                axios.get(`${API_BASE_URL}/api/bank-accounts/`),
+                axios.get(`${API_BASE_URL}/api/bill-statuses/`),
+                axios.get(`${API_BASE_URL}/api/recurrences/`)
+            ]);
+            setBankAccounts(accRes.data.filter(a => !a.archived));
+            setBillStatuses(statusRes.data.filter(s => !s.archived));
+            setRecurrences(recRes.data.filter(r => !r.archived));
+        } catch (err) {
+            console.error("Error fetching related data for instance dropdowns:", err);
+            setError(prev => `${prev ? prev + ' ' : ''}Failed to load dropdown options.`);
+        }
+    }, []);
 
     useEffect(() => {
         fetchInstances();
-        // fetchRelatedData();
-    }, [fetchInstances /*, fetchRelatedData*/]);
+        fetchRelatedData();
+    }, [fetchInstances, fetchRelatedData]);
 
     const handleShowModal = (instance = null) => {
         setCurrentInstance(instance);
-        setFormData(instance ? {
-            bank_account: instance.bank_account, priority: instance.priority, due_date: instance.due_date,
-            pay_date: instance.pay_date || '', name: instance.name, status: instance.status, archived: instance.archived,
-            current_balance: instance.current_balance || '', recurrence: instance.recurrence || ''
-        } : {
-            bank_account: '', priority: 0, due_date: '', pay_date: '', name: '', status: '',
-            archived: false, current_balance: '', recurrence: '' // Use empty strings for form consistency initially
-        });
+        setFormData(instance ?
+            {
+                bank_account: instance.bank_account, // Expecting IDs
+                priority: instance.priority,
+                due_date: instance.due_date,
+                pay_date: instance.pay_date || null,
+                name: instance.name,
+                status: instance.status,
+                archived: instance.archived,
+                current_balance: instance.current_balance || null, // Use field name from model
+                recurrence: instance.recurrence || null
+            } : { // Defaults for new
+                bank_account: '',
+                priority: 0,
+                due_date: '',
+                pay_date: null,
+                name: '',
+                status: '',
+                archived: false,
+                current_balance: null,
+                recurrence: null
+            });
         setShowModal(true);
-        setError(null); // Clear main error when opening modal
-        setModalError(null); // Clear modal-specific error
+        setError(null);
     };
 
     const handleCloseModal = () => {
@@ -69,23 +106,30 @@ function BankAccountInstanceManager() {
         setModalError(null); // Clear modal error on close
     };
 
-    const handleInputChange = (event) => {
+    const handleInputChange = (event) => { /* ... */
         const { name, value, type, checked } = event.target;
+        let processedValue = value;
+        const optionalNullableFields = ['pay_date', 'current_balance', 'recurrence'];
+        if (optionalNullableFields.includes(name) && value === '') {
+            processedValue = null;
+        }
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : processedValue
         }));
     };
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event) => { /* ... */
         event.preventDefault();
         setIsSubmitting(true);
-        setModalError(null); // Clear previous modal error
-        const method = currentInstance ? 'put' : 'post';
-        const url = currentInstance ? `${apiEndpoint}${currentInstance.id}/` : apiEndpoint;
+        setError(null);
+        const method = currentInstance ? 'put' : 'post'; // <-- CHANGE
+        const url = currentInstance ? `${apiEndpoint}${currentInstance.id}/` : apiEndpoint; // <-- CHANGE
 
         // --- Prepare Data for Submission ---
-        let submitData = { ...formData };
+        const submitData = { ...formData };
+
+        // --- Data Type/FK Processing ---
         const fkFields = ['bank_account', 'status', 'recurrence'];
         const numericNullable = ['current_balance'];
         const dateNullable = ['pay_date'];
@@ -97,6 +141,7 @@ function BankAccountInstanceManager() {
             } else {
                 const intValue = parseInt(submitData[field], 10);
                 if (isNaN(intValue)) {
+                    // bank_account and status are required
                     if (field === 'bank_account' || field === 'status') { // Required FKs
                         setModalError(`Invalid ID for required field: ${field}. Please enter a number.`);
                         setIsSubmitting(false);
@@ -116,10 +161,15 @@ function BankAccountInstanceManager() {
             return;
         }
 
-        // Process Optional Numeric Fields
+        // Ensure optional number fields are null or valid numbers  
+        if (submitData.current_balance !== null && isNaN(parseFloat(submitData.current_balance))) {
+            submitData.current_balance = null; // Or set error
+        }
+
+        // Process Optional Numeric Fields // Ensure optional number fields are null or valid numbers
         for (const field of numericNullable) {
             if (submitData[field] === null || submitData[field] === '') {
-                 submitData[field] = null;
+                submitData[field] = null;
             } else {
                 const floatValue = parseFloat(submitData[field]);
                 if (isNaN(floatValue)) {
@@ -133,10 +183,10 @@ function BankAccountInstanceManager() {
 
         // Process Optional Date Fields
         for (const field of dateNullable) {
-             if (submitData[field] === null || submitData[field] === '') {
-                 submitData[field] = null;
+            if (submitData[field] === null || submitData[field] === '') {
+                submitData[field] = null;
             }
-             // Basic validation could be added here if needed (e.g., date format)
+            // Basic validation could be added here if needed (e.g., date format)
         }
 
         // Process Priority
@@ -154,14 +204,15 @@ function BankAccountInstanceManager() {
             fetchInstances(); // Refresh list
         } catch (err) {
             console.error(`Error ${method === 'put' ? 'updating' : 'creating'} instance:`, err.response?.data || err.message);
+            setError(`Failed to ${method === 'put' ? 'update' : 'create'} bank account instance. ${JSON.stringify(err.response?.data)}`); // <-- CHANGE
             // Display error within the modal
             const errorData = err.response?.data;
             let errorMessage = `Failed to ${method === 'put' ? 'update' : 'create'} instance.`;
             if (typeof errorData === 'object' && errorData !== null) {
-                 // Try to format DRF validation errors
+                // Try to format DRF validation errors
                 errorMessage += " " + Object.entries(errorData).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`).join('; ');
             } else if (typeof errorData === 'string') {
-                 errorMessage += ` ${errorData}`;
+                errorMessage += ` ${errorData}`;
             }
             setModalError(errorMessage);
         } finally {
@@ -171,8 +222,8 @@ function BankAccountInstanceManager() {
 
     // --- IMPORTANT FOR TESTING: Stub window.confirm in Cypress ---
     const handleDelete = async (id) => {
-         if (window.confirm("Are you sure you want to delete this bank account instance?")) {
-             setIsLoading(true); // Show loading on main page temporarily
+        if (window.confirm("Are you sure you want to delete this bank account instance?")) {
+            setIsLoading(true); // Show loading on main page temporarily
             setError(null); // Clear main error
             try {
                 await axios.delete(`${apiEndpoint}${id}/`);
@@ -182,13 +233,13 @@ function BankAccountInstanceManager() {
                 setError("Failed to delete bank account instance."); // Set main error
                 setIsLoading(false); // Stop loading indicator on error
             }
-             // Note: fetchInstances() will set isLoading=false on success
+            // Note: fetchInstances() will set isLoading=false on success
         }
     };
 
     return (
-        <Container data-cy="bank-account-instance-manager"> {/* Added */}
-            <h2 data-cy="bank-account-instances-heading">Bank Account Instances / Transactions</h2> {/* Changed for consistency */}
+        <Container data-cy="bank-account-instance-manager">
+            <h2 data-cy="instances-heading">Bank Account Instances / Transactions</h2>
             {/* Display general fetch errors */}
             {error && <Alert variant="danger" data-cy="instances-error-alert">{error}</Alert>}
 
@@ -198,10 +249,10 @@ function BankAccountInstanceManager() {
 
             {/* Loading State */}
             {isLoading && !showModal && (
-                 <div className="text-center" data-cy="instances-loading-spinner"> {/* Added */}
+                <div className="text-center" data-cy="instances-loading-spinner"> 
                     <Spinner animation="border" />
                     <p>Loading instances...</p>
-                 </div>
+                </div>
             )}
 
             {/* Empty State */}
@@ -241,8 +292,8 @@ function BankAccountInstanceManager() {
                 </Table>
             )}
 
-             {/* Add/Edit Modal */}
-             <Modal show={showModal} onHide={handleCloseModal} size="lg" data-cy="instance-modal"> {/* Added */}
+            {/* Add/Edit Modal */}
+            <Modal show={showModal} onHide={handleCloseModal} size="lg" data-cy="instance-modal"> {/* Added */}
                 <Modal.Header closeButton>
                     {/* Title checkable via text content */}
                     <Modal.Title>{currentInstance ? 'Edit' : 'Add'} Bank Account Instance</Modal.Title>
@@ -253,78 +304,78 @@ function BankAccountInstanceManager() {
                         {/* Display modal-specific validation/submission errors */}
                         {modalError && <Alert variant="danger" data-cy="instance-modal-error-alert">{modalError}</Alert>}
 
-                         <Row>
-                             <Col md={6}>
+                        <Row>
+                            <Col md={6}>
                                 <Form.Group className="mb-3" controlId="instanceAccount">
                                     <Form.Label>Bank Account*</Form.Label>
                                     {/* Real App: Replace with Select Dropdown */}
-                                    <Form.Control required type="number" name="bank_account" value={formData.bank_account} onChange={handleInputChange} placeholder="Enter Bank Account ID" data-cy="instance-bank-account-input"/> {/* Added */}
+                                    <Form.Control required type="number" name="bank_account" value={formData.bank_account} onChange={handleInputChange} placeholder="Enter Bank Account ID" data-cy="instance-bank-account-input" /> {/* Added */}
                                 </Form.Group>
-                             </Col>
-                             <Col md={6}>
-                                 <Form.Group className="mb-3" controlId="instanceName">
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3" controlId="instanceName">
                                     <Form.Label>Name / Description*</Form.Label>
-                                    <Form.Control required type="text" name="name" value={formData.name} onChange={handleInputChange} maxLength={100} data-cy="instance-name-input"/> {/* Added */}
+                                    <Form.Control required type="text" name="name" value={formData.name} onChange={handleInputChange} maxLength={100} data-cy="instance-name-input" /> {/* Added */}
                                 </Form.Group>
-                             </Col>
-                         </Row>
-                         <Row>
+                            </Col>
+                        </Row>
+                        <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3" controlId="instanceStatus">
                                     <Form.Label>Status*</Form.Label>
                                     {/* Real App: Replace with Select Dropdown */}
-                                    <Form.Control required type="number" name="status" value={formData.status} onChange={handleInputChange} placeholder="Enter Bill Status ID" data-cy="instance-status-input"/> {/* Added */}
+                                    <Form.Control required type="number" name="status" value={formData.status} onChange={handleInputChange} placeholder="Enter Bill Status ID" data-cy="instance-status-input" /> {/* Added */}
                                 </Form.Group>
                             </Col>
-                             <Col md={6}>
+                            <Col md={6}>
                                 <Form.Group className="mb-3" controlId="instanceRecurrence">
                                     <Form.Label>Recurrence</Form.Label>
                                     {/* Real App: Replace with Select Dropdown */}
-                                    <Form.Control type="number" name="recurrence" value={formData.recurrence || ''} onChange={handleInputChange} placeholder="Enter Recurrence ID (optional)" data-cy="instance-recurrence-input"/> {/* Added */}
+                                    <Form.Control type="number" name="recurrence" value={formData.recurrence || ''} onChange={handleInputChange} placeholder="Enter Recurrence ID (optional)" data-cy="instance-recurrence-input" /> {/* Added */}
                                 </Form.Group>
                             </Col>
                         </Row>
-                         <Row>
+                        <Row>
                             <Col md={4}>
                                 <Form.Group className="mb-3" controlId="instanceDueDate">
                                     <Form.Label>Due Date*</Form.Label>
-                                    <Form.Control required type="date" name="due_date" value={formData.due_date} onChange={handleInputChange} data-cy="instance-due-date-input"/> {/* Added */}
+                                    <Form.Control required type="date" name="due_date" value={formData.due_date} onChange={handleInputChange} data-cy="instance-due-date-input" /> {/* Added */}
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group className="mb-3" controlId="instancePayDate">
                                     <Form.Label>Pay Date</Form.Label>
-                                    <Form.Control type="date" name="pay_date" value={formData.pay_date || ''} onChange={handleInputChange} data-cy="instance-pay-date-input"/> {/* Added */}
+                                    <Form.Control type="date" name="pay_date" value={formData.pay_date || ''} onChange={handleInputChange} data-cy="instance-pay-date-input" /> {/* Added */}
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group className="mb-3" controlId="instancePriority">
                                     <Form.Label>Priority</Form.Label>
-                                    <Form.Control type="number" name="priority" value={formData.priority} onChange={handleInputChange} data-cy="instance-priority-input"/> {/* Added */}
+                                    <Form.Control type="number" name="priority" value={formData.priority} onChange={handleInputChange} data-cy="instance-priority-input" /> {/* Added */}
                                 </Form.Group>
                             </Col>
                         </Row>
                         <Row>
-                           <Col md={6}>
+                            <Col md={6}>
                                 <Form.Group className="mb-3" controlId="instanceAmount">
                                     <Form.Label>Amount / Balance Snapshot</Form.Label>
-                                    <Form.Control type="number" step="0.01" name="current_balance" value={formData.current_balance || ''} onChange={handleInputChange} data-cy="instance-amount-input"/> {/* Added */}
+                                    <Form.Control type="number" step="0.01" name="current_balance" value={formData.current_balance || ''} onChange={handleInputChange} data-cy="instance-amount-input" /> {/* Added */}
                                 </Form.Group>
                             </Col>
-                             <Col md={6}>
-                                 <Form.Group className="mb-3" controlId="instanceArchived">
-                                     <Form.Label>&nbsp;</Form.Label> {/* Spacer */}
+                            <Col md={6}>
+                                <Form.Group className="mb-3" controlId="instanceArchived">
+                                    <Form.Label>&nbsp;</Form.Label> {/* Spacer */}
                                     {/* Use data-cy on the input itself */}
-                                    <Form.Check type="checkbox" name="archived" label="Archived" checked={formData.archived} onChange={handleInputChange} className="mt-2" data-cy="instance-archived-checkbox"/> {/* Added */}
+                                    <Form.Check type="checkbox" name="archived" label="Archived" checked={formData.archived} onChange={handleInputChange} className="mt-2" data-cy="instance-archived-checkbox" /> {/* Added */}
                                 </Form.Group>
-                             </Col>
+                            </Col>
                         </Row>
 
                     </Modal.Body>
-                     <Modal.Footer>
+                    <Modal.Footer>
                         <Button variant="secondary" onClick={handleCloseModal} data-cy="instance-modal-close-button">Close</Button> {/* Added */}
                         <Button variant="primary" type="submit" disabled={isSubmitting} data-cy="instance-modal-save-button"> {/* Added */}
-                           {isSubmitting ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" data-cy="instance-modal-spinner"/> : 'Save Changes'} {/* Added */}
+                            {isSubmitting ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" data-cy="instance-modal-spinner" /> : 'Save Changes'} {/* Added */}
                         </Button>
                     </Modal.Footer>
                 </Form>
