@@ -11,5 +11,6 @@ describe('Application Loading', () => {
   
       // You could add more checks here, e.g., checking if the main navigation exists
       // cy.get('nav').should('exist');
+      
     });
   });

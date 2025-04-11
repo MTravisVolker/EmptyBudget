@@ -58,7 +58,8 @@ describe('App Component Tabs Functionality', () => {
     cy.get('[data-cy="due-bills-heading"]').should('be.visible');
 
     // Check that another manager's heading is NOT visible (or doesn't exist)
-    cy.get('[data-cy="bills-heading"]').should('not.exist'); // Assumes inactive tabs are unmounted
+    //cy.get('[data-cy="bills-heading"]').should('not.exist'); // Assumes inactive tabs are unmounted
+    cy.get('[data-cy="bills-heading"]').should('not.be.visible'); // Assumes inactive tabs are unmounted
     // If inactive tabs are hidden but still in DOM: .should('not.be.visible');
   });
 
@@ -82,31 +83,35 @@ describe('App Component Tabs Functionality', () => {
     cy.get('[data-cy="bills-heading"]').should('be.visible'); // Assuming BillManager has this data-cy
 
     // Check DueBillManager content is not visible/doesn't exist
-    cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    //cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="due-bills-heading"]').should('not.be.visible');
   });
 
   it('should switch to "Bank Accounts" tab and render its content when clicked', () => {
     cy.get('[role="tab"]').contains('Bank Accounts').click();
     cy.get('[role="tab"]').contains('Bank Accounts').should('have.class', 'active');
     cy.get('[role="tab"]').contains('Due Bills').should('not.have.class', 'active');
-    cy.get('[data-cy="bank-accounts-heading"]').should('be.visible'); // Assuming BankAccountManager has this
-    cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="bank-account-manager-heading"]').should('be.visible'); // Assuming BankAccountManager has this
+    //cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="due-bills-heading"]').should('not.be.visible');
   });
 
   it('should switch to "Account Instances" tab and render its content when clicked', () => {
     cy.get('[role="tab"]').contains('Account Instances').click();
     cy.get('[role="tab"]').contains('Account Instances').should('have.class', 'active');
     cy.get('[role="tab"]').contains('Due Bills').should('not.have.class', 'active');
-    cy.get('[data-cy="bank-account-instances-heading"]').should('be.visible'); // Assuming BankAccountInstanceManager has this
-    cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="bank-account-instances-manager"]').should('be.visible'); // Assuming BankAccountInstanceManager has this
+    //cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="due-bills-heading"]').should('not.be.visible');
   });
 
   it('should switch to "Bill Statuses" tab and render its content when clicked', () => {
     cy.get('[role="tab"]').contains('Bill Statuses').click();
     cy.get('[role="tab"]').contains('Bill Statuses').should('have.class', 'active');
     cy.get('[role="tab"]').contains('Due Bills').should('not.have.class', 'active');
-    cy.get('[data-cy="bill-statuses-heading"]').should('be.visible'); // Assuming BillStatusManager has this
-    cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="bill-status-manager-heading"]').should('be.visible'); // Assuming BillStatusManager has this
+    //cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="due-bills-heading"]').should('not.be.visible');
   });
 
   it('should switch to "Recurrences" tab and render its content when clicked', () => {
@@ -114,6 +119,7 @@ describe('App Component Tabs Functionality', () => {
     cy.get('[role="tab"]').contains('Recurrences').should('have.class', 'active');
     cy.get('[role="tab"]').contains('Due Bills').should('not.have.class', 'active');
     cy.get('[data-cy="recurrences-heading"]').should('be.visible'); // Assuming RecurrenceManager has this
-    cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    //cy.get('[data-cy="due-bills-heading"]').should('not.exist');
+    cy.get('[data-cy="due-bills-heading"]').should('not.be.visible');
   });
 });

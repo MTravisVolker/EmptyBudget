@@ -202,7 +202,7 @@ function BankAccountInstanceManager() {
 
     return (
         <Container>
-            <h2>Bank Account Instances / Transactions</h2> {/* <-- CHANGE */}
+            <h2 data-cy="bank-account-instances-manager">Bank Account Instances / Transactions</h2> {/* <-- CHANGE */}
             {error && <Alert variant="danger">{error}</Alert>}
             <Button variant="primary" onClick={() => handleShowModal()} className="mb-3">
                 Add Instance {/* <-- CHANGE */}

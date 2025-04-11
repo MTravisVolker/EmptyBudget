@@ -95,7 +95,7 @@ function BankAccountManager() {
 
     return (
         <Container>
-            <h2>Bank Accounts</h2> {/* <-- CHANGE */}
+            <h2 data-cy="bank-account-manager-heading">Bank Accounts</h2> {/* <-- CHANGE */}
             {error && <Alert variant="danger">{error}</Alert>}
             <Button variant="primary" onClick={() => handleShowModal()} className="mb-3">
                 Add Bank Account {/* <-- CHANGE */}
