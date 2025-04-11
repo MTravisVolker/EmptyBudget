@@ -98,7 +98,7 @@ function RecurrenceManager() {
 
     return (
         <Container>
-            <h2>Recurrence Patterns</h2>
+            <h2 data-cy="recurrences-heading">Recurrence Patterns</h2>
             {error && <Alert variant="danger">{error}</Alert>}
             <Button variant="primary" onClick={() => handleShowModal()} className="mb-3">
                 Add Recurrence

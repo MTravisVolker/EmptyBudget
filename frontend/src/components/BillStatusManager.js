@@ -102,7 +102,7 @@ function BillStatusManager() {
 
     return (
         <Container>
-            <h2>Bill Statuses</h2> {/* <-- CHANGE Title */}
+            <h2 data-cy="bill-status-manager-heading">Bill Statuses</h2> {/* <-- CHANGE Title */}
             {error && <Alert variant="danger">{error}</Alert>}
             <Button variant="primary" onClick={() => handleShowModal()} className="mb-3">
                 Add Bill Status {/* <-- CHANGE Button Text */}

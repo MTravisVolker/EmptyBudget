@@ -162,7 +162,7 @@ function BillManager() {
 
     return (
         <Container>
-            <h2>Bill Definitions</h2> {/* <-- CHANGE */}
+            <h2 data-cy="bills-heading">Bill Definitions</h2> {/* <-- CHANGE */}
             {error && <Alert variant="danger">{error}</Alert>}
             <Button variant="primary" onClick={() => handleShowModal()} className="mb-3">
                 Add Bill {/* <-- CHANGE */}
