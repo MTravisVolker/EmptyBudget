@@ -295,4 +295,4 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` file for more information (You should create a LICENSE file, typically containing the standard MIT license text).
+Distributed under the MIT License. See `LICENSE` file for more information
