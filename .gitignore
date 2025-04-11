@@ -1,0 +1,43 @@
+# === General ===
+.env*
+!.env.example
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3*
+media/
+static_root/
+staticfiles/
+
+# === Python / Django Virtual Environments ===
+venv/
+env/
+*/venv/
+*/env/
+.venv/
+*/.venv/
+
+# === Node / React ===
+node_modules/
+*/node_modules/
+build/
+*/build/
+coverage/
+*/coverage/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# === OS / Editor Files ===
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
