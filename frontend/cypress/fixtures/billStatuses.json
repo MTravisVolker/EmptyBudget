@@ -1,0 +1,5 @@
+[
+    { "id": 3, "name": 'Expected', "archived": false, "highlight_color_hex": '#FFFF00' },
+    { "id": 4, "name": 'Completed', "archived": false, "highlight_color_hex": '#00FF00' },
+    { "id": 99, "name": 'Archived Status', "archived": true, "highlight_color_hex": '#CCCCCC' }
+]

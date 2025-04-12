@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "bank_account": 101,
+    "priority": 0,
+    "due_date": "2023-12-15",
+    "pay_date": null,
+    "name": "Salary Deposit",
+    "status": 3,
+    "archived": false,
+    "current_balance": "2500.00",
+    "recurrence": 5
+  },
+  {
+    "id": 2,
+    "bank_account": 102,
+    "priority": 1,
+    "due_date": "2023-12-20",
+    "pay_date": "2023-12-19",
+    "name": "Transfer to Savings",
+    "status": 4,
+    "archived": false,
+    "current_balance": "500.00",
+    "recurrence": null
+  }
+]

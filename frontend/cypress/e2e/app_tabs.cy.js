@@ -100,7 +100,7 @@ describe('App Component Tabs Functionality', () => {
     cy.get('[role="tab"]').contains('Account Instances').click();
     cy.get('[role="tab"]').contains('Account Instances').should('have.class', 'active');
     cy.get('[role="tab"]').contains('Due Bills').should('not.have.class', 'active');
-    cy.get('[data-cy="bank-account-instances-manager"]').should('be.visible'); // Assuming BankAccountInstanceManager has this
+    cy.get('[data-cy="bank-account-instances-heading"]').should('be.visible'); // Assuming BankAccountInstanceManager has this
     //cy.get('[data-cy="due-bills-heading"]').should('not.exist');
     cy.get('[data-cy="due-bills-heading"]').should('not.be.visible');
   });

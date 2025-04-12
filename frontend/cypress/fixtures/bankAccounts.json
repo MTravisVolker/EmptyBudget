@@ -1,0 +1,5 @@
+[
+  { "id": 101, "name": "Main Checking", "archived": false, "font_color_hex": "#000000" },
+  { "id": 102, "name": "Emergency Savings", "archived": false, "font_color_hex": "#0000FF" },
+  { "id": 103, "name": "Old Account", "archived": true, "font_color_hex": "#888888" }
+]
