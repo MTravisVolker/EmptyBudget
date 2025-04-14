@@ -117,12 +117,12 @@ function BankAccountManager() {
                     </thead>
                     <tbody>
                         {accounts.map(acc => ( // <-- CHANGE
-                            <tr key={acc.id}>
-                                <td>{acc.id}</td>
+                            <tr style={{color: acc.font_color_hex}} key={acc.id}>
+                                <td style={{color: acc.font_color_hex}}>{acc.id}</td>
                                 <td style={{color: acc.font_color_hex}}>{acc.name}</td> {/* <-- CHANGE */}
-                                <td>{acc.font_color_hex}</td> {/* <-- CHANGE */}
+                                <td style={{color: acc.font_color_hex}}>{acc.font_color_hex}</td> {/* <-- CHANGE */}
                                 {/* <td>{acc.current_balance ?? 'N/A'}</td> */}
-                                <td>{acc.archived ? 'Yes' : 'No'}</td>
+                                <td style={{color: acc.font_color_hex}}>{acc.archived ? 'Yes' : 'No'}</td>
                                 <td>
                                     <Button variant="info" size="sm" onClick={() => handleShowModal(acc)} className="me-2">Edit</Button> {/* <-- CHANGE */}
                                     <Button variant="danger" size="sm" onClick={() => handleDelete(acc.id)}>Delete</Button>

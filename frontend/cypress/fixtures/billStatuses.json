@@ -1,5 +1,27 @@
 [
-    { "id": 3, "name": 'Expected', "archived": false, "highlight_color_hex": '#FFFF00' },
-    { "id": 4, "name": 'Completed', "archived": false, "highlight_color_hex": '#00FF00' },
-    { "id": 99, "name": 'Archived Status', "archived": true, "highlight_color_hex": '#CCCCCC' }
-]
+    {
+      "id": 1,
+      "name": "MOCK Estimated",
+      "archived": false,
+      "highlight_color_hex": "#FFFFFF"
+    },
+    {
+      "id": 2,
+      "name": "MOCK Confirmed",
+      "archived": false,
+      "highlight_color_hex": "#FFE800"
+    },
+    {
+      "id": 3,
+      "name": "MOCK Payment Sent",
+      "archived": true,
+      "highlight_color_hex": "#1FDF36"
+    },
+    {
+      "id": 4,
+      "name": "MOCK Payment Cleared",
+      "archived": true,
+      "highlight_color_hex": "#C00000"
+    }
+  ]
+  

@@ -123,12 +123,12 @@ function BillStatusManager() {
                     </thead>
                     <tbody>
                         {statuses.map(status => ( // <-- CHANGE State Variable
-                            <tr key={status.id}>
-                                <td>{status.id}</td>
-                                <td>{status.name}</td>
+                            <tr style={{ backgroundColor: status.highlight_color_hex }} key={status.id}>
+                                <td style={{ backgroundColor: status.highlight_color_hex }}>{status.id}</td>
+                                <td style={{ backgroundColor: status.highlight_color_hex }}>{status.name}</td>
                                 <td style={{ backgroundColor: status.highlight_color_hex }}>{status.highlight_color_hex}</td> {/* <-- CHANGE Column Data */}
-                                <td>{status.archived ? 'Yes' : 'No'}</td>
-                                <td>
+                                <td style={{ backgroundColor: status.highlight_color_hex }}>{status.archived ? 'Yes' : 'No'}</td>
+                                <td style={{ backgroundColor: status.highlight_color_hex }}>
                                     <Button variant="info" size="sm" onClick={() => handleShowModal(status)} className="me-2">Edit</Button> {/* <-- CHANGE State Variable */}
                                     <Button variant="danger" size="sm" onClick={() => handleDelete(status.id)}>Delete</Button>
                                 </td>

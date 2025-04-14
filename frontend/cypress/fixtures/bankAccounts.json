@@ -1,5 +1,38 @@
 [
-  { "id": 101, "name": "Main Checking", "archived": false, "font_color_hex": "#000000" },
-  { "id": 102, "name": "Emergency Savings", "archived": false, "font_color_hex": "#0000FF" },
-  { "id": 103, "name": "Old Account", "archived": true, "font_color_hex": "#888888" }
+  {
+    "id": 6,
+    "name": "MOCK CAPITAL",
+    "archived": false,
+    "font_color_hex": "#D03027"
+  },
+  {
+    "id": 3,
+    "name": "MOCK FirstTech",
+    "archived": false,
+    "font_color_hex": "#0052A0"
+  },
+  {
+    "id": 2,
+    "name": "MOCK OnPoint",
+    "archived": false,
+    "font_color_hex": "#000000"
+  },
+  {
+    "id": 4,
+    "name": "MOCK RIVERMARK",
+    "archived": false,
+    "font_color_hex": "#963634"
+  },
+  {
+    "id": 1,
+    "name": "MOCK UNITUS",
+    "archived": true,
+    "font_color_hex": "#FFC000"
+  },
+  {
+    "id": 5,
+    "name": "MOCK UNITUS CC",
+    "archived": true,
+    "font_color_hex": "#A47D00"
+  }
 ]

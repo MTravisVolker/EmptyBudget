@@ -1,26 +1,26 @@
 [
   {
     "id": 1,
-    "bank_account": 101,
+    "bank_account": 2,
     "priority": 0,
-    "due_date": "2023-12-15",
+    "due_date": "2025-04-11",
     "pay_date": null,
-    "name": "Salary Deposit",
-    "status": 3,
+    "name": "UNITUS BALANCE",
+    "status": 1,
     "archived": false,
     "current_balance": "2500.00",
-    "recurrence": 5
+    "recurrence": 2
   },
   {
     "id": 2,
-    "bank_account": 102,
-    "priority": 1,
-    "due_date": "2023-12-20",
-    "pay_date": "2023-12-19",
-    "name": "Transfer to Savings",
-    "status": 4,
+    "bank_account": 4,
+    "priority": 0,
+    "due_date": "2025-04-11",
+    "pay_date": "2025-04-11",
+    "name": "Rivermark BALANCE",
+    "status": 1,
     "archived": false,
     "current_balance": "500.00",
-    "recurrence": null
+    "recurrence": 1
   }
 ]

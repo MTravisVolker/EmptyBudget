@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "name": "MOCK Bi-Weekly",
+      "calculation": "Every 2 weeks",
+      "archived": false
+    },
+    {
+      "id": 2,
+      "name": "MOCK Day of Month",
+      "calculation": "Every month",
+      "archived": false
+    },
+    {
+      "id": 3,
+      "name": "MOCK Bi-Monthly",
+      "calculation": "Every 2 months",
+      "archived": false
+    },
+    {
+      "id": 4,
+      "name": "MOCK Day of Every 2 Months",
+      "calculation": "Every 2 months",
+      "archived": false
+    }
+  ]
+  

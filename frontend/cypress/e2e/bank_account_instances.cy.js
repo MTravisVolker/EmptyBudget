@@ -1,42 +1,21 @@
 // cypress/e2e/bank_account_instances.cy.js
 
-describe('Bank Account Instance Management Tab', () => { 
-  
-  const mockInstances = [
-    { id: 1, bank_account: 101, priority: 0, due_date: '2023-12-15', pay_date: null, name: 'Salary Deposit',
-      status: 3, archived: false, current_balance: '2500.00', recurrence: 5 // Status 'Expected', Recurrence 'Monthly'
-    },
-    {
-      id: 2, bank_account: 102, priority: 1, due_date: '2023-12-20', pay_date: '2023-12-19', name: 'Transfer to Savings',
-      status: 4, archived: false, current_balance: '500.00', recurrence: null // Status 'Completed', No Recurrence
-    },
-  ];
-
-  // Mock data for the dropdowns (ensure IDs match those used in mockInstances)
-  const mockBillStatuses = [
-    { id: 3, name: 'Expected', archived: false, highlight_color_hex: '#FFFF00' },
-    { id: 4, name: 'Completed', archived: false, highlight_color_hex: '#00FF00' },
-    { id: 99, name: 'Archived Status', archived: true, highlight_color_hex: '#CCCCCC' }, // Archived
-  ];
-
-  const mockRecurrences = [
-    { id: 5, name: 'Monthly', calculation: 'Every month', archived: false },
-    { id: 6, name: 'Weekly', calculation: 'Every week', archived: false },
-  ];
-  // --- End Mock Data ---
+describe('Bank Account Instance Management with Dropdowns', function() {  
 
   // --- Setup Intercepts and Navigation ---
-  beforeEach(() => {
+  beforeEach(function() {
     // Load fixtures and assign aliases BEFORE intercepts that use them
     cy.fixture('bankAccountInstances.json').as('instancesData');
     cy.fixture('bankAccounts.json').as('accountsData');
     cy.fixture('billStatuses.json').as('statusesData');
     cy.fixture('recurrences.json').as('recurrencesData');
     // Intercept API calls (Keep as before)
-    cy.intercept('GET', '/api/bank-account-instances/', { statusCode: 200, body: mockInstances }).as('getInstances');
-    cy.intercept('GET', '/api/bank-accounts/', { statusCode: 200, body: mockBankAccounts }).as('getBankAccounts');
-    cy.intercept('GET', '/api/bill-statuses/', { statusCode: 200, body: mockBillStatuses }).as('getBillStatuses');
-    cy.intercept('GET', '/api/recurrences/', { statusCode: 200, body: mockRecurrences }).as('getRecurrences');
+
+    //cy.intercept('GET', '/api/bank-account-instances/', { statusCode: 200, body: this.instancesData }).as('getInstances');
+    cy.intercept('GET', '/api/bank-account-instances/', { statusCode: 200, body: this.instancesData }).as('getInstances');
+    cy.intercept('GET', '/api/bank-accounts/', { statusCode: 200, body: this.accountsData }).as('getBankAccounts');
+    cy.intercept('GET', '/api/bill-statuses/', { statusCode: 200, body: this.statusesData }).as('getBillStatuses');
+    cy.intercept('GET', '/api/recurrences/', { statusCode: 200, body: this.recurrencesData }).as('getRecurrences');
 
     // --- FIX: Navigate to the correct tab ---
     cy.visit('/'); // Visit the root page where App.js renders the tabs
@@ -49,15 +28,15 @@ describe('Bank Account Instance Management Tab', () => {
     cy.wait(['@getInstances', '@getBankAccounts', '@getBillStatuses', '@getRecurrences']);
     // --- End FIX ---
   });
-  // --- End Setup --- Type whatever 
+  // --- End Setup --- 
 
   // --- Test Table Display (Should now work) ---
-  it('should display the instances table with names instead of IDs', () => {
+  it('should display the instances table with names instead of IDs', function() {
     // The beforeEach already navigated and waited
 
     cy.get('[data-cy="bank-account-instances-heading"]').should('be.visible'); // Heading for THIS component
     cy.get('[data-cy="instances-table"]').should('be.visible');
-    cy.get('[data-cy="instances-table"] tbody tr').should('have.length', mockInstances.length);
+    cy.get('[data-cy="instances-table"] tbody tr').should('have.length', this.instancesData.length);
 
     // Verify content of the FIRST row using NAMES
     cy.get('[data-cy="instance-row-1"]').within(() => {
@@ -75,12 +54,12 @@ describe('Bank Account Instance Management Tab', () => {
 
 
   // --- Test Modal Functionality ---
-  describe('Add/Edit Instance Modal (within Account Instances Tab)', () => { // Added context to describe
+  describe('Add/Edit Instance Modal (within Account Instances Tab)', function() { // Added context to describe
 
     // No changes needed inside this inner describe block,
     // as the beforeEach from the *outer* describe block handles the navigation.
 
-    it('should open the Add modal with populated dropdowns', () => {
+    it('should open the Add modal with populated dropdowns', function() {
       cy.get('[data-cy="add-instance-button"]').click();
       // ... rest of the test assertions for dropdowns ...
       cy.get('[data-cy="instance-bank-account-input"]').find('option[value="101"]').should('contain.text', 'Main Checking');
@@ -88,7 +67,7 @@ describe('Bank Account Instance Management Tab', () => {
       cy.get('[data-cy="instance-recurrence-input"]').find('option[value="5"]').should('contain.text', 'Monthly');
     });
 
-    it('should fail validation if required dropdowns are not selected on Add', () => {
+    it('should fail validation if required dropdowns are not selected on Add', function() {
         cy.get('[data-cy="add-instance-button"]').click();
         // ... fill non-dropdown fields ...
         cy.get('[data-cy="instance-name-input"]').type('Test Instance Name');
@@ -101,11 +80,11 @@ describe('Bank Account Instance Management Tab', () => {
     });
 
 
-    it('should successfully add a new instance using dropdowns', () => {
+    it('should successfully add a new instance using dropdowns', function() {
       // Intercept the POST request (re-intercept needed if not in beforeEach)
-      cy.intercept('POST', '/api/bank-account-instances/', { statusCode: 201, body: { id: 3, ...mockInstances[0] } }).as('postInstance');
+      //cy.intercept('POST', '/api/bank-account-instances/', { statusCode: 201, body: { id: 3, ...mockInstances[0] } }).as('postInstance');
       // Intercept the GET refresh (re-intercept needed if not in beforeEach)
-      cy.intercept('GET', '/api/bank-account-instances/', { statusCode: 200, body: [...mockInstances, { id: 3, ...mockInstances[0] }] }).as('getInstancesAfterAdd');
+      //cy.intercept('GET', '/api/bank-account-instances/', { statusCode: 200, body: [...mockInstances, { id: 3, ...mockInstances[0] }] }).as('getInstancesAfterAdd');
 
       // Open Add modal
       cy.get('[data-cy="add-instance-button"]').click();
@@ -126,7 +105,7 @@ describe('Bank Account Instance Management Tab', () => {
     });
 
 
-    it('should open the Edit modal with correct values pre-selected in dropdowns', () => {
+    it('should open the Edit modal with correct values pre-selected in dropdowns', function() {
       // Click Edit on the first row
       cy.get('[data-cy="edit-instance-button-1"]').click();
       // ... rest of assertions for pre-filled values ...
@@ -135,7 +114,7 @@ describe('Bank Account Instance Management Tab', () => {
       cy.get('[data-cy="instance-recurrence-input"]').should('have.value', '5');
     });
 
-    it('should successfully edit an existing instance using dropdowns', () => {
+    it('should successfully edit an existing instance using dropdowns', function() {
         const instanceIdToEdit = 1;
         const updatedInstanceData = { /* ... as before ... */ status: 4, recurrence: null, name: "Updated Salary Deposit", bank_account: 101, due_date: '2023-12-15', current_balance: "2500.00" }; // Ensure you include enough fields for the check
         const updatedList = mockInstances.map(inst => inst.id === instanceIdToEdit ? updatedInstanceData : inst);
