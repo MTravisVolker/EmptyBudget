@@ -7,25 +7,24 @@ import { Table, Button, Modal, Form, Spinner, Alert, Container, Row, Col } from 
 function BankAccountInstanceManager() {
     // State for the main resource (Instances)
     const [instances, setInstances] = useState([]);
-    const [isLoading, setIsLoading] = useState(false); // Loading state for instances list
-    const [error, setError] = useState(null); // General errors (fetching list, deleting)
+    const [isLoading, setIsLoading] = useState(true); // Initialize as true
+    const [error, setError] = useState(null);
 
     // State for the Modal and Form
     const [showModal, setShowModal] = useState(false);
-    const [currentInstance, setCurrentInstance] = useState(null); // null for 'Add', object for 'Edit'
+    const [currentInstance, setCurrentInstance] = useState(null);
     const [formData, setFormData] = useState({
         bank_account: '', priority: 0, due_date: '', pay_date: '', name: '',
-        status: '', archived: false, current_balance: '', recurrence: '' // Use empty strings for initial controlled inputs
+        status: '', archived: false, current_balance: '', recurrence: ''
     });
-    const [modalError, setModalError] = useState(null); // Errors specific to modal submission/validation
-    const [isSubmitting, setIsSubmitting] = useState(false); // Loading state for form submission
+    const [modalError, setModalError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // --- NEW: State for Dropdown Data ---
+    // State for Dropdown Data
     const [bankAccounts, setBankAccounts] = useState([]);
     const [billStatuses, setBillStatuses] = useState([]);
     const [recurrences, setRecurrences] = useState([]);
-    const [isRelatedDataLoading, setIsRelatedDataLoading] = useState(false); // Loading state for dropdown data
-    // --- END NEW ---
+    const [isRelatedDataLoading, setIsRelatedDataLoading] = useState(true); // Initialize as true
 
     const apiEndpoint = `${API_BASE_URL}/api/bank-account-instances/`;
 
@@ -35,46 +34,43 @@ function BankAccountInstanceManager() {
         setError(null);
         try {
             const response = await axios.get(apiEndpoint);
-            setInstances(response.data);
+            setInstances(response.data || []);
         } catch (err) {
             console.error("Error fetching bank account instances:", err);
             setError("Failed to load bank account instances.");
+            setInstances([]);
         } finally {
             setIsLoading(false);
         }
     }, [apiEndpoint]);
 
-    // --- NEW: Fetch data for dropdowns ---
+    // Fetch data for dropdowns
     const fetchRelatedData = useCallback(async () => {
         setIsRelatedDataLoading(true);
-        // Clear previous errors related to dropdown data fetching if retrying
-        // setError(prev => prev?.replace(/Failed to load dropdown options.*?(\. |$)/, '')); // More complex error handling might be needed
-
         try {
             const [accRes, statusRes, recRes] = await Promise.all([
                 axios.get(`${API_BASE_URL}/api/bank-accounts/`),
                 axios.get(`${API_BASE_URL}/api/bill-statuses/`),
                 axios.get(`${API_BASE_URL}/api/recurrences/`)
             ]);
-            // Filter out archived items for selection, sort alphabetically
-            setBankAccounts(accRes.data.filter(a => !a.archived).sort((a, b) => a.name.localeCompare(b.name)));
-            setBillStatuses(statusRes.data.filter(s => !s.archived).sort((a, b) => a.name.localeCompare(b.name)));
-            setRecurrences(recRes.data.filter(r => !r.archived).sort((a, b) => a.name.localeCompare(b.name)));
+            setBankAccounts(accRes.data || []);
+            setBillStatuses(statusRes.data || []);
+            setRecurrences(recRes.data || []);
         } catch (err) {
             console.error("Error fetching related data for instance dropdowns:", err);
-            // Append error message, don't overwrite existing list fetch errors
             setError(prev => `${prev ? prev + ' ' : ''}Failed to load dropdown options.`);
+            setBankAccounts([]);
+            setBillStatuses([]);
+            setRecurrences([]);
         } finally {
             setIsRelatedDataLoading(false);
         }
     }, []);
-    // --- END NEW ---
 
-    // Initial data fetch on component mount
     useEffect(() => {
         fetchInstances();
-        fetchRelatedData(); // Fetch dropdown data as well
-    }, [fetchInstances, fetchRelatedData]); // Include both fetch functions in dependencies
+        fetchRelatedData();
+    }, [fetchInstances, fetchRelatedData]);
 
     // Prepare modal for Add or Edit
     const handleShowModal = (instance = null) => {
@@ -233,45 +229,59 @@ function BankAccountInstanceManager() {
             </Button>
 
             {/* Loading State for Instance List */}
-            {isLoading && (
-                 <div className="text-center" data-cy="instances-loading-spinner">
+            {isLoading ? (
+                <div className="text-center" data-cy="instances-loading-spinner">
                     <Spinner animation="border" />
                     <p>Loading instances...</p>
-                 </div>
-            )}
-
-            {/* Empty State */}
-            {!isLoading && !error && instances.length === 0 && (
+                </div>
+            ) : instances.length === 0 ? (
                 <Alert variant="info" data-cy="instances-empty-alert">
                     No bank account instances found.
                 </Alert>
-            )}
-
-            {/* Data Table */}
-            {!isLoading && !error && instances.length > 0 && (
+            ) : (
                 <Table data-cy="instances-table" striped bordered hover responsive size="sm">
                     <thead>
                         <tr>
-                            {/* Updated Headers for clarity */}
-                            <th>ID</th><th>Account</th><th>Name</th><th>Due Date</th>
-                            <th>Status</th><th>Amount/Bal</th><th>Pay Date</th><th>Archived</th><th>Actions</th>
+                            <th>ID</th>
+                            <th>Account</th>
+                            <th>Name</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Amount/Bal</th>
+                            <th>Pay Date</th>
+                            <th>Archived</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {instances.map(inst => (
-                            <tr key={inst.id} data-cy={`instance-row-${inst.id}`}>
-                                <td>{inst.id}</td>
-                                {/* Use helper functions to display names */}
-                                <td data-cy={`instance-row-${inst.id}-account`}>{getAccountName(inst.bank_account)}</td>
-                                <td data-cy={`instance-row-${inst.id}-name`}>{inst.name}</td>
-                                <td data-cy={`instance-row-${inst.id}-due_date`}>{inst.due_date}</td>
-                                <td data-cy={`instance-row-${inst.id}-status`}>{getStatusName(inst.status)}</td>
-                                <td data-cy={`instance-row-${inst.id}-balance`}>${parseFloat(inst.current_balance || 0).toFixed(2)}</td>
-                                <td data-cy={`instance-row-${inst.id}-pay_date`}>{inst.pay_date || 'N/A'}</td>
-                                <td data-cy={`instance-row-${inst.id}-archived`}>{inst.archived ? 'Yes' : 'No'}</td>
+                        {instances.map(instance => (
+                            <tr key={instance.id} data-cy={`instance-row-${instance.id}`}>
+                                <td>{instance.id}</td>
+                                <td>{getAccountName(instance.bank_account)}</td>
+                                <td>{instance.name}</td>
+                                <td>{instance.due_date}</td>
+                                <td>{getStatusName(instance.status)}</td>
+                                <td>{instance.current_balance}</td>
+                                <td>{instance.pay_date}</td>
+                                <td>{instance.archived ? 'Yes' : 'No'}</td>
                                 <td>
-                                    <Button data-cy={`edit-instance-button-${inst.id}`} variant="info" size="sm" onClick={() => handleShowModal(inst)} className="me-2">Edit</Button>
-                                    <Button data-cy={`delete-instance-button-${inst.id}`} variant="danger" size="sm" onClick={() => handleDelete(inst.id)}>Delete</Button>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => handleShowModal(instance)}
+                                        data-cy={`edit-instance-button-${instance.id}`}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={() => handleDelete(instance.id)}
+                                        className="ms-2"
+                                        data-cy={`delete-instance-button-${instance.id}`}
+                                    >
+                                        Delete
+                                    </Button>
                                 </td>
                             </tr>
                         ))}
@@ -279,130 +289,125 @@ function BankAccountInstanceManager() {
                 </Table>
             )}
 
-             {/* Add/Edit Modal */}
-             <Modal show={showModal} onHide={handleCloseModal} size="lg" data-cy="instance-modal">
+            {/* Add/Edit Modal */}
+            <Modal show={showModal} onHide={handleCloseModal} size="lg" data-cy="instance-modal">
                 <Modal.Header closeButton>
                     <Modal.Title>{currentInstance ? 'Edit' : 'Add'} Bank Account Instance</Modal.Title>
                 </Modal.Header>
                 <Form onSubmit={handleSubmit} data-cy="instance-form">
                     <Modal.Body>
                         {modalError && <Alert variant="danger" data-cy="instance-modal-error-alert">{modalError}</Alert>}
-                        {/* Show loading indicator for dropdown data inside modal */}
-                        {isRelatedDataLoading && <div className='text-center'><Spinner animation='border' size='sm'/> <p>Loading options...</p></div> }
-
-                         <Row>
-                             <Col md={6}>
-                                <Form.Group className="mb-3" controlId="instanceAccount">
-                                    <Form.Label>Bank Account*</Form.Label>
-                                    {/* --- UPDATED: Dropdown --- */}
-                                    <Form.Select
-                                        required
-                                        name="bank_account"
-                                        value={formData.bank_account ?? ''} // Handle null/undefined state
-                                        onChange={handleInputChange}
-                                        data-cy="instance-bank-account-input"
-                                        disabled={isRelatedDataLoading} // Disable while loading options
-                                        aria-label="Select Bank Account"
-                                    >
-                                        <option value="" disabled={formData.bank_account !== ''}>-- Select Bank Account --</option> {/* Placeholder */}
-                                        {bankAccounts.map(acc => (
-                                            <option key={acc.id} value={acc.id}>{acc.name}</option>
-                                        ))}
-                                    </Form.Select>
-                                    {/* --- END UPDATED --- */}
-                                </Form.Group>
-                             </Col>
-                             <Col md={6}>
-                                 <Form.Group className="mb-3" controlId="instanceName">
-                                    <Form.Label>Name / Description*</Form.Label>
-                                    <Form.Control required type="text" name="name" value={formData.name} onChange={handleInputChange} maxLength={100} data-cy="instance-name-input"/>
-                                </Form.Group>
-                             </Col>
-                         </Row>
-                         <Row>
-                            <Col md={6}>
-                                <Form.Group className="mb-3" controlId="instanceStatus">
-                                    <Form.Label>Status*</Form.Label>
-                                     {/* --- UPDATED: Dropdown --- */}
-                                     <Form.Select
-                                        required
-                                        name="status"
-                                        value={formData.status ?? ''}
-                                        onChange={handleInputChange}
-                                        data-cy="instance-status-input"
-                                        disabled={isRelatedDataLoading}
-                                        aria-label="Select Status"
-                                    >
-                                        <option value="" disabled={formData.status !== ''}>-- Select Status --</option>
-                                        {billStatuses.map(stat => (
-                                            <option key={stat.id} value={stat.id}>{stat.name}</option>
-                                        ))}
-                                    </Form.Select>
-                                    {/* --- END UPDATED --- */}
-                                </Form.Group>
-                            </Col>
-                             <Col md={6}>
-                                <Form.Group className="mb-3" controlId="instanceRecurrence">
-                                    <Form.Label>Recurrence</Form.Label>
-                                     {/* --- UPDATED: Dropdown --- */}
-                                     <Form.Select
-                                        name="recurrence"
-                                        value={formData.recurrence ?? ''}
-                                        onChange={handleInputChange}
-                                        data-cy="instance-recurrence-input"
-                                        disabled={isRelatedDataLoading}
-                                        aria-label="Select Recurrence"
-                                    >
-                                        <option value="">-- Select Recurrence (Optional) --</option> {/* Optional field */}
-                                        {recurrences.map(rec => (
-                                            <option key={rec.id} value={rec.id}>{rec.name}</option>
-                                        ))}
-                                    </Form.Select>
-                                    {/* --- END UPDATED --- */}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                         {/* Other fields remain the same */}
-                         <Row>
-                            <Col md={4}>
-                                <Form.Group className="mb-3" controlId="instanceDueDate">
-                                    <Form.Label>Due Date*</Form.Label>
-                                    <Form.Control required type="date" name="due_date" value={formData.due_date} onChange={handleInputChange} data-cy="instance-due-date-input"/>
-                                </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                                <Form.Group className="mb-3" controlId="instancePayDate">
-                                    <Form.Label>Pay Date</Form.Label>
-                                    <Form.Control type="date" name="pay_date" value={formData.pay_date || ''} onChange={handleInputChange} data-cy="instance-pay-date-input"/>
-                                </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                                <Form.Group className="mb-3" controlId="instancePriority">
-                                    <Form.Label>Priority</Form.Label>
-                                    <Form.Control type="number" name="priority" value={formData.priority} onChange={handleInputChange} data-cy="instance-priority-input"/>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                           <Col md={6}>
-                                <Form.Group className="mb-3" controlId="instanceAmount">
-                                    <Form.Label>Amount / Balance Snapshot</Form.Label>
-                                    <Form.Control type="number" step="0.01" name="current_balance" value={formData.current_balance || ''} onChange={handleInputChange} data-cy="instance-amount-input"/>
-                                </Form.Group>
-                            </Col>
-                             <Col md={6}>
-                                 <Form.Group className="mb-3" controlId="instanceArchived">
-                                     <Form.Label>&nbsp;</Form.Label> {/* Spacer */}
-                                    <Form.Check type="checkbox" name="archived" label="Archived" checked={formData.archived} onChange={handleInputChange} className="mt-2" data-cy="instance-archived-checkbox"/>
-                                </Form.Group>
-                             </Col>
-                        </Row>
-
+                        {isRelatedDataLoading ? (
+                            <div className='text-center'><Spinner animation='border' size='sm'/> <p>Loading options...</p></div>
+                        ) : (
+                            <>
+                                <Row>
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3" controlId="instanceAccount">
+                                            <Form.Label>Bank Account*</Form.Label>
+                                            <Form.Select
+                                                required
+                                                name="bank_account"
+                                                value={formData.bank_account ?? ''}
+                                                onChange={handleInputChange}
+                                                data-cy="instance-bank-account-input"
+                                                disabled={isRelatedDataLoading}
+                                                aria-label="Select Bank Account"
+                                            >
+                                                <option value="" disabled={formData.bank_account !== ''}>-- Select Bank Account --</option>
+                                                {bankAccounts.map(acc => (
+                                                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3" controlId="instanceName">
+                                            <Form.Label>Name / Description*</Form.Label>
+                                            <Form.Control required type="text" name="name" value={formData.name} onChange={handleInputChange} maxLength={100} data-cy="instance-name-input"/>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3" controlId="instanceStatus">
+                                            <Form.Label>Status*</Form.Label>
+                                            <Form.Select
+                                                required
+                                                name="status"
+                                                value={formData.status ?? ''}
+                                                onChange={handleInputChange}
+                                                data-cy="instance-status-input"
+                                                disabled={isRelatedDataLoading}
+                                                aria-label="Select Status"
+                                            >
+                                                <option value="" disabled={formData.status !== ''}>-- Select Status --</option>
+                                                {billStatuses.map(stat => (
+                                                    <option key={stat.id} value={stat.id}>{stat.name}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3" controlId="instanceRecurrence">
+                                            <Form.Label>Recurrence</Form.Label>
+                                            <Form.Select
+                                                name="recurrence"
+                                                value={formData.recurrence ?? ''}
+                                                onChange={handleInputChange}
+                                                data-cy="instance-recurrence-input"
+                                                disabled={isRelatedDataLoading}
+                                                aria-label="Select Recurrence"
+                                            >
+                                                <option value="">-- Select Recurrence (Optional) --</option>
+                                                {recurrences.map(rec => (
+                                                    <option key={rec.id} value={rec.id}>{rec.name}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col md={4}>
+                                        <Form.Group className="mb-3" controlId="instanceDueDate">
+                                            <Form.Label>Due Date*</Form.Label>
+                                            <Form.Control required type="date" name="due_date" value={formData.due_date} onChange={handleInputChange} data-cy="instance-due-date-input"/>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={4}>
+                                        <Form.Group className="mb-3" controlId="instancePayDate">
+                                            <Form.Label>Pay Date</Form.Label>
+                                            <Form.Control type="date" name="pay_date" value={formData.pay_date || ''} onChange={handleInputChange} data-cy="instance-pay-date-input"/>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={4}>
+                                        <Form.Group className="mb-3" controlId="instancePriority">
+                                            <Form.Label>Priority</Form.Label>
+                                            <Form.Control type="number" name="priority" value={formData.priority} onChange={handleInputChange} data-cy="instance-priority-input"/>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3" controlId="instanceAmount">
+                                            <Form.Label>Amount / Balance Snapshot</Form.Label>
+                                            <Form.Control type="number" step="0.01" name="current_balance" value={formData.current_balance || ''} onChange={handleInputChange} data-cy="instance-amount-input"/>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3" controlId="instanceArchived">
+                                            <Form.Label>&nbsp;</Form.Label> {/* Spacer */}
+                                            <Form.Check type="checkbox" name="archived" label="Archived" checked={formData.archived} onChange={handleInputChange} className="mt-2" data-cy="instance-archived-checkbox"/>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            </>
+                        )}
                     </Modal.Body>
-                     <Modal.Footer>
+                    <Modal.Footer>
                         <Button variant="secondary" onClick={handleCloseModal} data-cy="instance-modal-close-button">Close</Button>
-                        <Button variant="primary" type="submit" disabled={isSubmitting || isRelatedDataLoading} data-cy="instance-modal-save-button"> {/* Also disable if options loading */}
-                           {isSubmitting ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" data-cy="instance-modal-spinner"/> : 'Save Changes'}
+                        <Button variant="primary" type="submit" disabled={isSubmitting || isRelatedDataLoading} data-cy="instance-modal-save-button">
+                            {isSubmitting ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" data-cy="instance-modal-spinner"/> : 'Save Changes'}
                         </Button>
                     </Modal.Footer>
                 </Form>

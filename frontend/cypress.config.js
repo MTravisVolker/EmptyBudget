@@ -8,4 +8,10 @@ module.exports = defineConfig({
       // implement node event listeners here
     },
   },
+  // Enable source maps
+  devtool: 'source-map',
+  // Configure webpack to handle source maps
+  webpack: {
+    devtool: 'source-map'
+  }
 });

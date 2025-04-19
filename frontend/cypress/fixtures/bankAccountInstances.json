@@ -4,7 +4,7 @@
     "bank_account": 2,
     "priority": 0,
     "due_date": "2025-04-11",
-    "pay_date": null,
+    "pay_date": "2025-04-11",
     "name": "UNITUS BALANCE",
     "status": 1,
     "archived": false,
